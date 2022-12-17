@@ -1,13 +1,19 @@
+BUILD_DIR="build"
+PLATFORM="linux"
+
 # Clean
 echo "Cleaning..."
-rm -r build/*
+mkdir ./${BUILD_DIR}
+rm -r ./${BUILD_DIR}/*
 echo "Done cleaning."
+
 # Compile
 echo "Compiling..."
-clang++ -g -O3 src/linux_kaleidoscope.cpp `llvm-config --cxxflags` -o build/linux_kaleidoscope
+clang++ -g -O3 ./src/${PLATFORM}_kaleidoscope.cpp `llvm-config --cxxflags` -o ./${BUILD_DIR}/${PLATFORM}_kaleidoscope
 echo "Done compiling."
+
 # Run
 echo "Running..."
-./build/linux_kaleidoscope
+./${BUILD_DIR}/${PLATFORM}_kaleidoscope
 echo ""
 echo "Done running."
