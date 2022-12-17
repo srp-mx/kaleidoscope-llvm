@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string>
 #include <cctype>
+#include <memory>
+#include <vector>
 
 #define local_persist static
 #define global_variable static
@@ -128,4 +130,82 @@ gettok()
     LastChar = getchar();
     return ThisChar;
 }
+
+// ABSTRACT SYNTAX TREE
+
+/// ExprAST - Base class for all expression nodes.
+class ExprAST
+{
+    // TODO(srp): Add a type field
+    public:
+        virtual ~ExprAST() {}
+};
+
+/// NumberExprAST - Expression class for numeric literals like "1.0"
+class NumberExprAST : public ExprAST
+{
+    real64 Val;
+
+    public:
+        NumberExprAST(double Val) : Val(Val) {}
+};
+
+/// VariableExprAST - Expression class for referencing a variable, like "a".
+class VariableExprAST : public ExprAST
+{
+    str Name;
+
+    public:
+        VariableExprAST(const str &Name) : Name(Name) {}
+};
+
+/// BinaryExprAST - Expression class for a binary operator.
+class BinaryExprAST : public ExprAST
+{
+    char Op;
+    std::unique_ptr<ExprAST> LHS, RHS;
+
+    public:
+        BinaryExprAST(char op, std::unique_ptr<ExprAST> LHS, std::unique_ptr<ExprAST> RHS)
+            : Op(op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
+};
+
+/// CallExprAST - Expression class for function calls.
+class CallExprAST : public ExprAST
+{
+    str Callee;
+    std::vector<std::unique_ptr<ExprAST>> Args;
+
+    public:
+        CallExprAST(const str & Callee, std::vector<std::unique_ptr<ExprAST>> Args)
+            : Callee(Callee), Args(std::move(Args)) {}
+};
+
+/// PrototypeAST - This class represents the "prototype" for a function,
+/// which captures its name and its argument names (thus, the number of args too)
+class PrototypeAST
+{
+    str Name;
+    std::vector<str> Args;
+
+    public:
+        PrototypeAST(const str &name, std::vector<str> Args)
+            : Name(name), Args(std::move(Args)) {}
+
+        const str &getName() const { return Name; }
+};
+
+/// FunctionAST - This class represents a function definition itself.
+class FunctionAST
+{
+    std::unique_ptr<PrototypeAST> Proto;
+    std::unique_ptr<ExprAST> Body;
+
+    public:
+        FunctionAST(std::unique_ptr<PrototypeAST> Proto, std::unique_ptr<ExprAST> Body)
+            : Proto(std::move(Proto)), Body(std::move(Body)) {}
+};
+
+
+
 
