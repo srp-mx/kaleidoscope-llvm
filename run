@@ -1,0 +1,13 @@
+# Clean
+echo "Cleaning..."
+rm -r build/*
+echo "Done cleaning."
+# Compile
+echo "Compiling..."
+clang++ -g -O3 src/linux_kaleidoscope.cpp `llvm-config --cxxflags` -o build/linux_kaleidoscope
+echo "Done compiling."
+# Run
+echo "Running..."
+./build/linux_kaleidoscope
+echo ""
+echo "Done running."
