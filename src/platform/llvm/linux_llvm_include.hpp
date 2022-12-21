@@ -20,3 +20,5 @@
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
 
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Target/TargetMachine.h"

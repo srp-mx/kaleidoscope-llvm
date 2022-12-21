@@ -1,19 +1,28 @@
 BUILD_DIR="build"
 PLATFORM="linux"
 
+LLVM_COMPILE_FLAGS="llvm-config --cxxflags --ldflags --system-libs --libs core orcjit native"
+EXTRA_COMPILE_FLAGS="-rdynamic"
+COMPILE_OUTPUT="./${BUILD_DIR}/${PLATFORM}_kaleidoscope"
+
 # Clean
 echo "Cleaning..."
 mkdir ./${BUILD_DIR}
 rm -r ./${BUILD_DIR}/*
 echo "Done cleaning."
+echo ""
 
 # Compile
-echo "Compiling..."
-clang++ -g -O3 ./src/${PLATFORM}_kaleidoscope.cpp `llvm-config --cxxflags --ldflags --system-libs --libs core` -o ./${BUILD_DIR}/${PLATFORM}_kaleidoscope
+echo "Compiling for ${PLATFORM}..."
+echo "LLVM FLAGS: ${LLVM_COMPILE_FLAGS}"
+echo "EXTRA FLAGS: ${EXTRA_COMPILE_FLAGS}"
+clang++ -g -O3 ./src/${PLATFORM}_kaleidoscope.cpp `${LLVM_COMPILE_FLAGS}` ${EXTRA_COMPILE_FLAGS} -o ${COMPILE_OUTPUT}
 echo "Done compiling."
+echo "OUTPUT: ${COMPILE_OUTPUT}"
+echo ""
 
 # Run
 echo "Running..."
-./${BUILD_DIR}/${PLATFORM}_kaleidoscope
+eval ${COMPILE_OUTPUT}
 echo ""
 echo "Done running."

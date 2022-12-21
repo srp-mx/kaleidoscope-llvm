@@ -13,6 +13,8 @@
 
 #include "kaleidoscope.cpp"
 
+#include "platform/externs/linux_extern_table.hpp"
+
 int main()
 {
     // Install standard binary operators.
