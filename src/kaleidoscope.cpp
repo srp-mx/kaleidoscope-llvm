@@ -22,6 +22,32 @@ InitializeModule()
     Builder = std::make_unique<llvm::IRBuilder<>>(*TheContext);
 }
 
+internal void 
+InitializePassManager()
+{
+    // Create a new pass manager attached to it.
+    TheFPM = std::make_unique<llvml::FunctionPassManager>(TheModule.get());
+
+    // Do simple "peephole" and bit-twiddling optimizations.
+    TheFPM->add(llvm::createInstructionCombiningPass());
+    // Reassociate expressions
+    TheFPM->add(llvm::createReassociatePass());
+    // Eliminate Common SubExpressions
+    TheFPM->add(llvm::createGVNPass());
+    // Simplify the control flow graph (deleting unreachable blocks, etc.)
+    TheFPM->add(llvm::createCFGSimplificationPass());
+
+    TheFPM->doInitialization();
+    // TODO(srp): See https://llvm.org/docs/Passes.html
+}
+
+internal void
+InitializeLLVM()
+{
+    InitializeModule();
+    InitializePassManager();
+}
+
 internal void
 HandleDefinition()
 {

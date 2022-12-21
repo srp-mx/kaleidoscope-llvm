@@ -11,7 +11,10 @@
 #include <map>
 #include <string>
 
+namespace llvml = llvm::legacy;
+
 global_variable std::unique_ptr<llvm::LLVMContext> TheContext;
 global_variable std::unique_ptr<llvm::Module> TheModule;
 global_variable std::unique_ptr<llvm::IRBuilder<>> Builder;
 global_variable std::map<std::string, llvm::Value*> NamedValues;
+global_variable std::unique_ptr<llvml::FunctionPassManager> TheFPM;

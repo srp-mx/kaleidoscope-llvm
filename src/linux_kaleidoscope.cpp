@@ -23,7 +23,7 @@ int main()
     getNextToken();
 
     // Make the module, which holds all the code.
-    InitializeModule();
+    InitializeLLVM();
 
     // Run the main "interpreter loop" now
     MainLoop();
