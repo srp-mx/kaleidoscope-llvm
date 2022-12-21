@@ -5,14 +5,34 @@
 
 #include "lexer/lexer.cpp"
 #include "ast/ast.cpp"
+#include "ast/ast_codegen.cpp"
 #include "parser/parser.cpp"
+#include <memory>
+
+// NOTE(srp): Top-level parsing and JIT driver
+
+internal void
+InitializeModule()
+{
+    // Open a new context and module.
+    TheContext = std::make_unique<llvm::LLVMContext>();
+    TheModule = std::make_unique<llvm::Module>("my cool jit", *TheContext);
+
+    // Create a new builder for the module.
+    Builder = std::make_unique<llvm::IRBuilder<>>(*TheContext);
+}
 
 internal void
 HandleDefinition()
 {
-    if (ParseDefinition())
+    if (auto FnAST = ParseDefinition())
     {
-        fprintf(stderr, "Parsed a function definition.\n");
+        if (auto *FnIR = FnAST->codegen())
+        {
+            fprintf(stderr, "Read function definition:");
+            FnIR->print(llvm::errs());
+            fprintf(stderr, "\n");
+        }
     }
     else
     {
@@ -25,9 +45,14 @@ HandleDefinition()
 internal void
 HandleExtern()
 {
-    if (ParseExtern())
+    if (auto ProtoAST = ParseExtern())
     {
-        fprintf(stderr, "Parsed an extern\n");
+        if (auto *FnIR = ProtoAST->codegen())
+        {
+            fprintf(stderr, "Read extern: ");
+            FnIR->print(llvm::errs());
+            fprintf(stderr, "\n");
+        }
     }
     else
     {
@@ -40,9 +65,17 @@ internal void
 HandleTopLevelExpression()
 {
     // Evaluate a top-level expression into an anonymous function.
-    if (ParseTopLevelExpr())
+    if (auto FnAST = ParseTopLevelExpr())
     {
-        fprintf(stderr, "Parsed a top-level expr\n");
+        if (auto *FnIR = FnAST->codegen())
+        {
+            fprintf(stderr, "Read top-level expression: ");
+            FnIR->print(llvm::errs());
+            fprintf(stderr, "\n");
+
+            // Remove the anonymous expression
+            FnIR->eraseFromParent();
+        }
     }
     else
     {
@@ -54,7 +87,7 @@ HandleTopLevelExpression()
 internal void
 MainLoop()
 {
-    while (1)
+    while (true)
     {
         fprintf(stderr, "ready> ");
         switch (CurTok)

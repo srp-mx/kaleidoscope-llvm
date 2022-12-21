@@ -9,7 +9,7 @@ echo "Done cleaning."
 
 # Compile
 echo "Compiling..."
-clang++ -g -O3 ./src/${PLATFORM}_kaleidoscope.cpp `llvm-config --cxxflags` -o ./${BUILD_DIR}/${PLATFORM}_kaleidoscope
+clang++ -g -O3 ./src/${PLATFORM}_kaleidoscope.cpp `llvm-config --cxxflags --ldflags --system-libs --libs core` -o ./${BUILD_DIR}/${PLATFORM}_kaleidoscope
 echo "Done compiling."
 
 # Run

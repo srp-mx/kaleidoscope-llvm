@@ -5,7 +5,7 @@
 #include "../platform/typedefs/typedefs.hpp"
 
 #include "../lexer/lexer.cpp"
-#include "../error_handling/parser_err.cpp"
+#include "../logging/parser_err.cpp"
 
 /// CurTok/getNextToken - Provide a simple token buffer. CurTok is the current
 /// token the parser is looking at. genNextToken reads another token from the
@@ -17,6 +17,9 @@ getNextToken()
 {
     return CurTok = gettok();
 }
+
+/// BinopPrecedence - This holds precedence for each binary operator that is defined.
+global_variable std::map<char, int32> BinopPrecedence;
 
 // NOTE(srp): Recursive descent parsing here
 
@@ -52,7 +55,7 @@ ParseParenExpr()
         return LogError("expected ')'");
     }
 
-    getNextToken(); // ear ')'
+    getNextToken(); // eat ')'
     return V;
 }
 
@@ -77,7 +80,7 @@ ParseIdentifierExpr()
     std::vector<std::unique_ptr<ExprAST>> Args;
     if (CurTok != ')')
     {
-        while(1)
+        while(true)
         {
             if (auto Arg = ParseExpression())
             {
@@ -133,9 +136,6 @@ ParsePrimary()
 
 // NOTE(srp): Operator-Precedence Parsing here
 
-/// BinopPrecedence - This holds precedence for each binary operator that is defined.
-global_variable std::map<char, int32> BinopPrecedence;
-
 /// GetTokPrecedence - Get the precedence of the pending binary operator token.
 internal int32
 GetTokPrecedence()
@@ -160,7 +160,7 @@ internal std::unique_ptr<ExprAST>
 ParseBinOpRHS(int32 ExprPrec, std::unique_ptr<ExprAST> LHS)
 {
     // If this is a binop, find its precedence
-    while (1)
+    while (true)
     {
         int32 TokPrec = GetTokPrecedence();
 

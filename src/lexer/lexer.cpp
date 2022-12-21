@@ -67,7 +67,7 @@ gettok()
             LastChar = getchar();
         } while (isdigit(LastChar) || LastChar == '.');
 
-        NumVal = strtod(NumStr.c_str(), 0);
+        NumVal = strtod(NumStr.c_str(), nullptr);
         return tok_number;
         
         // TODO(srp): This will incorrectly read "1.23.45.67" as "1.23"
