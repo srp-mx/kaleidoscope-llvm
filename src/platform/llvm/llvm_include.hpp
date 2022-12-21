@@ -1,7 +1,7 @@
 #pragma once
 
 
-#ifdef PLATFORM_LINUX
+#if PLATFORM_LINUX
     #include "linux_llvm_include.hpp"
 #else
     #include "linux_llvm_include.hpp" // Default to Linux llvm .h files

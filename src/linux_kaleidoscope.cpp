@@ -10,6 +10,7 @@
 #include <map>
 
 #define PLATFORM_LINUX 1
+#define MESSED_UP_FUNCTION_H 1
 
 #include "kaleidoscope.cpp"
 

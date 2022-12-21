@@ -111,14 +111,60 @@ ParseIdentifierExpr()
     return std::make_unique<CallExprAST>(IdName, std::move(Args));
 }
 
+/// ifexpr ::= 'if' expression 'then' expression 'else' expression
+internal std::unique_ptr<ExprAST>
+ParseIfExpr()
+{
+    getNextToken(); // eat the 'if'
+
+    // condition
+    auto Cond = ParseExpression();
+    if (!Cond)
+    {
+        return nullptr;
+    }
+
+    if (CurTok != tok_then)
+    {
+        return LogError("expected 'then'");
+    }
+
+    getNextToken(); // eat 'then'
+
+    auto Then = ParseExpression();
+
+    if (!Then)
+    {
+        return nullptr;
+    }
+
+    if (CurTok != tok_else)
+    {
+        return LogError("expected 'else'");
+    }
+
+    getNextToken();
+
+    auto Else = ParseExpression();
+    if (!Else)
+    {
+        return nullptr;
+    }
+
+    return std::make_unique<IfExprAST>(std::move(Cond), std::move(Then), std::move(Else));
+}
+
 /// primary
 ///     ::= identifierexpr
 ///     ::= numberexpr
 ///     ::= parenexpr
+///     ::= ifexpr
 /// Works as entry point for "primary" expressions
 internal std::unique_ptr<ExprAST>
 ParsePrimary()
 {
+    // TODO(srp): Parse unary -
+
     // That's why in the following functions we can assume CurTok's state
     // when they're called.
     switch (CurTok)
@@ -131,6 +177,8 @@ ParsePrimary()
             return ParseNumberExpr();
         case '(':
             return ParseParenExpr();
+        case tok_if:
+            return ParseIfExpr();
     }
 }
 
