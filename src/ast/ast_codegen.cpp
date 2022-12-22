@@ -55,7 +55,7 @@ UnaryExprAST::codegen()
         return nullptr;
     }
 
-    llvm::Function *F = getFunction(std::string("unary") + Opcode);
+    llvm::Function *F = getFunction((std::string("{unary") + Opcode) + "}");
     if (!F)
     {
         return LogErrorV("Unknown unary operator");
@@ -92,10 +92,10 @@ BinaryExprAST::codegen()
 
     // If it wasn't a builtin binary operator, it must be a user defined one. Emit
     // a call to it.
-    llvm::Function *F = getFunction(std::string("binary") + Op);
+    llvm::Function *F = getFunction((std::string("{binary") + Op) + "}");
     assert(F && "binary operator not found!");
 
-    llvm::Value *Ops[2] = { L, R };
+    llvm::Value *Ops[] = {L, R};
     return Builder->CreateCall(F, Ops, "binop");
 }
 
@@ -349,6 +349,12 @@ FunctionAST::codegen()
 
     // Error reading body, remove function.
     TheFunction->eraseFromParent();
+
+    if (P.isBinaryOp())
+    {
+        BinopPrecedence.erase(P.getOperatorName());
+    }
+
     return nullptr;
     // TODO(srp): bug: If the FunctionAST::codegen() method finds an existing 
     // IR Function, it does not validate its signature against the definition’s 

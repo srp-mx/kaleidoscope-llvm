@@ -386,8 +386,9 @@ ParsePrototype()
             {
                 return LogErrorP("Expected unary operator");
             }
-            FnName = "unary";
+            FnName = "{unary";
             FnName += (char)CurTok;
+            FnName += "}";
             Kind = 1;
             getNextToken();
             break;
@@ -397,8 +398,9 @@ ParsePrototype()
             {
                 return LogErrorP("Expected binary operator");
             }
-            FnName = "binary";
+            FnName = "{binary";
             FnName += (char)CurTok;
+            FnName += "}";
             Kind = 2;
             getNextToken();
 
