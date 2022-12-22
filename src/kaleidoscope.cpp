@@ -5,8 +5,8 @@
 
 #include "lexer/lexer.cpp"
 #include "ast/ast.cpp"
-#include "ast/ast_codegen.cpp"
 #include "parser/parser.cpp"
+#include "ast/ast_codegen.cpp"
 #include <memory>
 
 // NOTE(srp): Top-level parsing and JIT driver

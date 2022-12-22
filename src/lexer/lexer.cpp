@@ -26,6 +26,10 @@ enum Token {
     tok_else = -8,
     tok_for = -9,
     tok_in = -10,
+
+    // custom operators
+    tok_binary = -11,
+    tok_unary = -12,
 };
 
 // gettok - Return the next token from standard input
@@ -83,6 +87,16 @@ gettok()
         if (IdentifierStr == "in")
         {
             return tok_in;
+        }
+
+        if (IdentifierStr == "binary")
+        {
+            return tok_binary;
+        }
+
+        if (IdentifierStr == "unary")
+        {
+            return tok_unary;
         }
 
         return tok_identifier;
