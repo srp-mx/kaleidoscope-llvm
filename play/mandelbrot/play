@@ -1,0 +1,9 @@
+echo "Running mandelbrot.kal"
+echo ""
+echo ""
+cat mandelbrot.kal | sed '/^#/d' | tr '\n' ' ' | ../../build/linux_kaleidoscope
+echo ""
+echo ""
+echo "Done."
+
+
