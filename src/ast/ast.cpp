@@ -125,7 +125,8 @@ class PrototypeAST
         char getOperatorName() const
         {
             assert(isUnaryOp() || isBinaryOp());
-            return Name[Name.size() - 1];
+            return Name[Name.size() - 2]; // since the names are '{unary:}' we
+                                          // want the second to last char
         }
 
         unsigned getBinaryPrecedence() const { return Precedence; }

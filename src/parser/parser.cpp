@@ -287,11 +287,13 @@ GetTokPrecedence()
     }
 
     // Make sure it's a declared binop
-    int32 TokPrec = BinopPrecedence[CurTok];
-    if (TokPrec <= 0)
+    if (!BinopPrecedence.count(CurTok))
     {
         return -1;
     }
+
+    int32 TokPrec = BinopPrecedence.at(CurTok);
+    
     return TokPrec;
 }
 

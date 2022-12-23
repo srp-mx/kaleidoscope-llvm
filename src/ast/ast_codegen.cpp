@@ -8,7 +8,8 @@
 
 #include <string>
 
-llvm::Function *getFunction(std::string Name)
+llvm::Function *
+getFunction(std::string Name)
 {
     // First, see if the function has already been added to the current module.
     if (auto *F = TheModule->getFunction(Name))
@@ -55,7 +56,10 @@ UnaryExprAST::codegen()
         return nullptr;
     }
 
-    llvm::Function *F = getFunction((std::string("{unary") + Opcode) + "}");
+    std::string unaryFuncName = std::string("{unary");
+    unaryFuncName += Opcode;
+    unaryFuncName += '}';
+    llvm::Function *F = getFunction(unaryFuncName);
     if (!F)
     {
         return LogErrorV("Unknown unary operator");
