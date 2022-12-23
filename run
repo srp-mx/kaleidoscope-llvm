@@ -2,6 +2,7 @@ BUILD_DIR="build"
 PLATFORM="linux"
 
 LLVM_COMPILE_FLAGS="llvm-config --cxxflags --ldflags --system-libs --libs core orcjit native"
+DEBUG_FLAGS="-g -fstandalone-debug"
 EXTRA_COMPILE_FLAGS="-rdynamic"
 COMPILE_OUTPUT="./${BUILD_DIR}/${PLATFORM}_kaleidoscope"
 
@@ -15,8 +16,9 @@ echo ""
 # Compile
 echo "Compiling for ${PLATFORM}..."
 echo "LLVM FLAGS: ${LLVM_COMPILE_FLAGS}"
+echo "DEBUG FLAGS: ${DEBUG_FLAGS}"
 echo "EXTRA FLAGS: ${EXTRA_COMPILE_FLAGS}"
-clang++ -g -O3 ./src/${PLATFORM}_kaleidoscope.cpp `${LLVM_COMPILE_FLAGS}` ${EXTRA_COMPILE_FLAGS} -o ${COMPILE_OUTPUT}
+clang++ -O0 ${DEBUG_FLAGS} ./src/${PLATFORM}_kaleidoscope.cpp `${LLVM_COMPILE_FLAGS}` ${EXTRA_COMPILE_FLAGS} -o ${COMPILE_OUTPUT}
 echo "Done compiling."
 echo "OUTPUT: ${COMPILE_OUTPUT}"
 echo ""

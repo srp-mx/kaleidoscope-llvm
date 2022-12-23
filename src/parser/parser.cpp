@@ -266,6 +266,7 @@ ParseUnary()
 
     // If this is a unary operator, read it
     int32 Opc = CurTok;
+    getNextToken();
     if (auto Operand = ParseUnary())
     {
         return std::make_unique<UnaryExprAST>(Opc, std::move(Operand));
