@@ -1,0 +1,9 @@
+echo "Running fib.kal"
+echo ""
+echo ""
+cat fib.kal | sed '/^#/d' | tr '\n' ' ' | ../../build/linux_kaleidoscope
+echo ""
+echo ""
+echo "Done."
+
+
