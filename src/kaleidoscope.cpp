@@ -8,18 +8,9 @@
 #include "parser/parser.cpp"
 #include "ast/ast_codegen.cpp"
 #include <memory>
+#include <system_error>
 
 // NOTE(srp): Top-level parsing and JIT driver
-
-internal void
-InitializeJIT()
-{
-    llvm::InitializeNativeTarget();
-    llvm::InitializeNativeTargetAsmPrinter();
-    llvm::InitializeNativeTargetAsmParser();
-
-    TheJIT = ExitOnErr(llvmo::KaleidoscopeJIT::Create());
-}
 
 internal void
 InitializeModule()
@@ -27,39 +18,75 @@ InitializeModule()
     // Open a new context and module.
     TheContext = std::make_unique<llvm::LLVMContext>();
     TheModule = std::make_unique<llvm::Module>("my cool jit", *TheContext);
-    TheModule->setDataLayout(TheJIT->getDataLayout());
 
     // Create a new builder for the module.
     Builder = std::make_unique<llvm::IRBuilder<>>(*TheContext);
 }
 
-internal void 
-InitializePassManager()
+internal int32
+CompileObjectCode()
 {
-    // Create a new pass manager attached to it.
-    TheFPM = std::make_unique<llvml::FunctionPassManager>(TheModule.get());
-    
-    //Promote allocas to registers.
-    TheFPM->add(llvm::createPromoteMemoryToRegisterPass());
-    // Do simple "peephole" and bit-twiddling optimizations.
-    TheFPM->add(llvm::createInstructionCombiningPass());
-    // Reassociate expressions
-    TheFPM->add(llvm::createReassociatePass());
-    // Eliminate Common SubExpressions
-    TheFPM->add(llvm::createGVNPass());
-    // Simplify the control flow graph (deleting unreachable blocks, etc.)
-    TheFPM->add(llvm::createCFGSimplificationPass());
+    llvm::InitializeAllTargetInfos();
+    llvm::InitializeAllTargets();
+    llvm::InitializeAllTargetMCs();
+    llvm::InitializeAllAsmParsers();
+    llvm::InitializeAllAsmPrinters();
 
-    TheFPM->doInitialization();
-    // TODO(srp): See https://llvm.org/docs/Passes.html
+    auto TargetTriple = llvm::sys::getDefaultTargetTriple();
+    TheModule->setTargetTriple(TargetTriple);
+
+    std::string Error;
+    auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
+
+    // Print an error and exit if we couldn't find the requested target.
+    // This generally occurs if we've forgotten to initialise the
+    // TargetRegistry or we have a bogus target triple
+    if (!Target)
+    {
+        llvm::errs() << Error;
+        return 1; // NOTE(srp): main should return this.
+    }
+
+    auto CPU = "generic";
+    auto Features = "";
+
+    llvm::TargetOptions opt;
+    auto RM = llvm::Optional<llvm::Reloc::Model>();
+    auto TheTargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+
+    TheModule->setDataLayout(TheTargetMachine->createDataLayout());
+
+    auto Filename = "output.o";
+    std::error_code EC;
+    llvm::raw_fd_ostream dest(Filename, EC, llvm::sys::fs::OF_None);
+
+    if (EC)
+    {
+        llvm::errs() << "Could not open file: " << EC.message();
+        return 1; // NOTE(srp): main should return this.
+    }
+
+    llvml::PassManager pass;
+    auto FileType = llvm::CGFT_ObjectFile;
+
+    if (TheTargetMachine->addPassesToEmitFile(pass, dest, nullptr,  FileType))
+    {
+        llvm::errs() << "TheTargetMachine can't emit a file of this type";
+        return 1; // NOTE(srp): main should return this.
+    }
+
+    pass.run(*TheModule);
+    dest.flush();
+
+    llvm::outs() << "Wrote " << Filename << "\n";
+
+    return 0; // NOTE(srp): no errors
 }
 
 internal void
 InitializeLLVM()
 {
-    InitializeJIT();
     InitializeModule();
-    InitializePassManager();
 }
 
 internal void
@@ -72,9 +99,6 @@ HandleDefinition()
             fprintf(stderr, "Read function definition:\n");
             FnIR->print(llvm::errs());
             fprintf(stderr, "\n");
-            ExitOnErr(TheJIT->addModule(llvmo::ThreadSafeModule(std::move(TheModule), std::move(TheContext))));
-            InitializeModule();
-            InitializePassManager();
         }
     }
     else
@@ -111,34 +135,7 @@ HandleTopLevelExpression()
     // Evaluate a top-level expression into an anonymous function.
     if (auto FnAST = ParseTopLevelExpr())
     {
-        if (auto *FnIR = FnAST->codegen())
-        {
-            // Prints IR
-            fprintf(stderr, "Read top level expression: \n");
-            FnIR->print(llvm::errs());
-            fprintf(stderr, "\n");
-
-            // Create a ResourceTracker to track JIT'd memory allocated to our
-            // anonymous expression -- that way we can free it after executing.
-            auto RT = TheJIT->getMainJITDylib().createResourceTracker();
-
-            auto TSM = llvmo::ThreadSafeModule(std::move(TheModule), std::move(TheContext));
-            ExitOnErr(TheJIT->addModule(std::move(TSM), RT));
-            InitializeModule();
-            InitializePassManager();
-
-            // Search the JIT for the __anon_expr symbol.
-            auto ExprSymbol = ExitOnErr(TheJIT->lookup("{__anon_expr}"));
-            assert(ExprSymbol && "Function not found\n");
-
-            // Get the symbol's address and cast it to the right type (takes no
-            // arguments, returns a real64) so we can call it as a native function.
-            real64 (*FP)() = (real64 (*)())(intptr_t)ExprSymbol.getAddress();
-            fprintf(stderr, "\nEvaluated to %f\n", FP());
-
-            // Delete the anonymous expression module from the JIT.
-            ExitOnErr(RT->remove());
-        }
+        FnAST->codegen();
     }
     else
     {
@@ -152,7 +149,6 @@ MainLoop()
 {
     while (true)
     {
-        fprintf(stderr, "ready> ");
         switch (CurTok)
         {
             case tok_eof:

@@ -1,0 +1,19 @@
+echo "Running average_code.kal"
+echo ""
+echo ""
+cat average_code.kal | sed '/^#/d' | tr '\n' ' ' | ../../build/linux_kaleidoscope
+echo ""
+echo ""
+echo "Running test_extern.cpp"
+echo ""
+echo ""
+clang++ test_extern.cpp output.o -o test
+./test
+echo ""
+echo ""
+echo "Cleaning up :)"
+rm ./output.o
+rm ./test
+echo "Done."
+
+

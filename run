@@ -1,7 +1,7 @@
 BUILD_DIR="build"
 PLATFORM="linux"
 
-LLVM_COMPILE_FLAGS="llvm-config --cxxflags --ldflags --system-libs --libs core orcjit native"
+LLVM_COMPILE_FLAGS="llvm-config --cxxflags --ldflags --system-libs --libs all"
 DEBUG_FLAGS="-g -fstandalone-debug"
 EXTRA_COMPILE_FLAGS="-rdynamic"
 COMPILE_OUTPUT="./${BUILD_DIR}/${PLATFORM}_kaleidoscope"
