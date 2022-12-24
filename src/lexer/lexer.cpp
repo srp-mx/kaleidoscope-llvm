@@ -30,6 +30,9 @@ enum Token {
     // custom operators
     tok_binary = -11,
     tok_unary = -12,
+
+    // var definition
+    tok_var = -13,
 };
 
 // gettok - Return the next token from standard input
@@ -97,6 +100,11 @@ gettok()
         if (IdentifierStr == "unary")
         {
             return tok_unary;
+        }
+
+        if (IdentifierStr == "var")
+        {
+            return tok_var;
         }
 
         return tok_identifier;

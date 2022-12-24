@@ -37,6 +37,20 @@ class VariableExprAST : public ExprAST
         const std::string &getName() const { return Name; }
 };
 
+/// VarExprAST - Expression class for var/in (variable creation)
+class VarExprAST : public ExprAST
+{
+    std::vector<std::pair<std::string, std::unique_ptr<ExprAST>>> VarNames; // Local mutable variable list
+    std::unique_ptr<ExprAST> Body; // Scope of the variable list
+
+    public:
+        VarExprAST(std::vector<std::pair<std::string, std::unique_ptr<ExprAST>>> VarNames,
+                std::unique_ptr<ExprAST> Body)
+            : VarNames(std::move(VarNames)), Body(std::move(Body)) {}
+
+        llvm::Value *codegen() override;
+};
+
 /// UnaryExprAST - Expression class for a unary operator.
 class UnaryExprAST : public ExprAST
 {

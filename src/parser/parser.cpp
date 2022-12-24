@@ -222,17 +222,84 @@ ParseForExpr()
     return std::make_unique<ForExprAST>(IdName, std::move(Start), std::move(End), std::move(Step), std::move(Body));
 }
 
+/// varexpr ::= 'var' identifier ('=' expression)?
+//                    (',' identifier ('=' expression)?)* 'in' expression
+internal std::unique_ptr<ExprAST> 
+ParseVarExpr()
+{
+    getNextToken(); // eat 'var'
+
+    std::vector<std::pair<std::string, std::unique_ptr<ExprAST>>> VarNames;
+
+    // At least one variable name is required.
+    if (CurTok != tok_identifier)
+    {
+        return LogError("expected identifier after var");
+    }
+
+    // Variable list
+    while (true)
+    {
+        std::string Name = IdentifierStr;
+        getNextToken(); // eat identifier
+
+        // Read the optional initializer
+        std::unique_ptr<ExprAST> Init;
+        if (CurTok == '=')
+        {
+            getNextToken(); // eat '='
+
+            Init = ParseExpression();
+            if (!Init)
+            {
+                return nullptr;
+            }
+        }
+
+        VarNames.push_back(std::make_pair(Name, std::move(Init)));
+
+        // End of var list, exit loop
+        if (CurTok != ',')
+        {
+            break;
+        }
+        
+        getNextToken(); // eat ','
+
+        if (CurTok != tok_identifier)
+        {
+            return LogError("expected identifier list after var");
+        }
+    }
+
+    // At this point we have to have 'in'
+    if (CurTok != tok_in)
+    {
+        return LogError("expected 'in' keyword after 'var'");
+    }
+
+    getNextToken(); // eat 'in'
+
+    auto Body = ParseExpression();
+    if (!Body)
+    {
+        return nullptr;
+    }
+
+    return std::make_unique<VarExprAST>(std::move(VarNames), std::move(Body));
+}
+
 /// primary
 ///     ::= identifierexpr
 ///     ::= numberexpr
 ///     ::= parenexpr
 ///     ::= ifexpr
+///     ::= forexpr
+///     ::= varexpr
 /// Works as entry point for "primary" expressions
 internal std::unique_ptr<ExprAST>
 ParsePrimary()
 {
-    // TODO(srp): Parse unary -
-
     // That's why in the following functions we can assume CurTok's state
     // when they're called.
     switch (CurTok)
@@ -249,6 +316,8 @@ ParsePrimary()
             return ParseIfExpr();
         case tok_for:
             return ParseForExpr();
+        case tok_var:
+            return ParseVarExpr();
     }
 }
 
