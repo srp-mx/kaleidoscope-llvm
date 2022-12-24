@@ -38,7 +38,9 @@ InitializePassManager()
 {
     // Create a new pass manager attached to it.
     TheFPM = std::make_unique<llvml::FunctionPassManager>(TheModule.get());
-
+    
+    //Promote allocas to registers.
+    TheFPM->add(llvm::createPromoteMemoryToRegisterPass());
     // Do simple "peephole" and bit-twiddling optimizations.
     TheFPM->add(llvm::createInstructionCombiningPass());
     // Reassociate expressions

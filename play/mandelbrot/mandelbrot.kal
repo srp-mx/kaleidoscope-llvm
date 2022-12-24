@@ -31,8 +31,8 @@ def binary& 6 (L R)
     else
         !(!(R));
 
-# Define = with slightly lower precedence than relationals
-def binary = 9 (L R)
+# Define ~ (equality) with slightly lower precedence than relationals
+def binary ~ 9 (L R)
     !(L < R | L > R);
 
 # Define : for sequencing as a low-precedence op that returns the RHS

@@ -21,7 +21,7 @@ class PrototypeAST;
 global_variable std::unique_ptr<llvm::LLVMContext> TheContext;
 global_variable std::unique_ptr<llvm::Module> TheModule;
 global_variable std::unique_ptr<llvm::IRBuilder<>> Builder;
-global_variable std::map<std::string, llvm::Value*> NamedValues;
+global_variable std::map<std::string, llvm::AllocaInst*> NamedValues;
 global_variable std::unique_ptr<llvml::FunctionPassManager> TheFPM;
 global_variable std::unique_ptr<llvmo::KaleidoscopeJIT> TheJIT;
 global_variable std::map<std::string, std::unique_ptr<PrototypeAST>> FunctionProtos;
