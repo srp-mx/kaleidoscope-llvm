@@ -1,4 +1,4 @@
-extern putchard(x);
+extern printd(x);
 
 def fib(x)
     if x < 3 then
@@ -6,4 +6,4 @@ def fib(x)
     else
         fib(x-1) + fib(x-2);
 
-fib(10);
+printd(fib(10));

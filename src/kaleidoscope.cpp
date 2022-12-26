@@ -163,7 +163,8 @@ HandleExtern()
         }
         else
         {
-            FunctionProtos[ProtoAST->getName()] = std::move(ProtoAST);
+            //FunctionProtos[ProtoAST->getName()] = std::move(ProtoAST);
+            FunctionProtos.insert({ ProtoAST->getName(), std::move(ProtoAST) });
         }
     }
     else

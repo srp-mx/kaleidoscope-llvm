@@ -22,9 +22,3 @@ clang++ -O0 ${DEBUG_FLAGS} ./src/${PLATFORM}_kaleidoscope.cpp `${LLVM_COMPILE_FL
 echo "Done compiling."
 echo "OUTPUT: ${COMPILE_OUTPUT}"
 echo ""
-
-# Run
-echo "Running..."
-eval ${COMPILE_OUTPUT}
-echo ""
-echo "Done running."

@@ -433,7 +433,8 @@ FunctionAST::codegen()
     // Transfer ownership of the prototype to the FunctionProtos map, but keep a
     // reference to it for use below.
     auto &P = *Proto;
-    FunctionProtos[Proto->getName()] = std::move(Proto);
+    //FunctionProtos[Proto->getName()] = std::move(Proto);
+    FunctionProtos.insert({ Proto->getName(), std::move(Proto) });
     llvm::Function *TheFunction = getFunction(P.getName());
     if (!TheFunction)
     {
