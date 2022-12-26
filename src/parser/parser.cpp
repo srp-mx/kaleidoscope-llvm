@@ -2,6 +2,7 @@
 // NOTE(srp): Still not final platform-independent code
 
 #include <map>
+#include <memory>
 #include "../platform/typedefs/typedefs.hpp"
 
 #include "../lexer/lexer.cpp"
@@ -68,11 +69,13 @@ ParseIdentifierExpr()
     /// To be called when the current token is a tok_identifier token.
     std::string IdName = IdentifierStr;
 
+    SourceLocation LitLoc = CurLoc;
+
     getNextToken(); // eat identifier.
 
     if (CurTok != '(') // Simple variable ref.
     {
-        return std::make_unique<VariableExprAST>(IdName);
+        return std::make_unique<VariableExprAST>(LitLoc, IdName);
     } // else: function call expression
 
     // Call.
@@ -108,13 +111,15 @@ ParseIdentifierExpr()
     // Eat the ')'
     getNextToken();
 
-    return std::make_unique<CallExprAST>(IdName, std::move(Args));
+    return std::make_unique<CallExprAST>(LitLoc, IdName, std::move(Args));
 }
 
 /// ifexpr ::= 'if' expression 'then' expression 'else' expression
 internal std::unique_ptr<ExprAST>
 ParseIfExpr()
 {
+    SourceLocation IfLoc = CurLoc;
+
     getNextToken(); // eat the 'if'
 
     // condition
@@ -151,7 +156,7 @@ ParseIfExpr()
         return nullptr;
     }
 
-    return std::make_unique<IfExprAST>(std::move(Cond), std::move(Then), std::move(Else));
+    return std::make_unique<IfExprAST>(IfLoc, std::move(Cond), std::move(Then), std::move(Else));
 }
 
 /// forexpr ::= 'for' identifier '=' expr ',' expr (',' expr)? 'in' expression
@@ -385,6 +390,7 @@ ParseBinOpRHS(int32 ExprPrec, std::unique_ptr<ExprAST> LHS)
 
         // Okay, we know this is a binop.
         int32 BinOp = CurTok;
+        SourceLocation BinLoc = CurLoc;
         getNextToken(); // eat binop
 
         // Parse the primary expression after the binary operator
@@ -410,7 +416,7 @@ ParseBinOpRHS(int32 ExprPrec, std::unique_ptr<ExprAST> LHS)
         }
 
         // Merge LHS/RGS.
-        LHS = std::make_unique<BinaryExprAST>(BinOp, std::move(LHS), std::move(RHS));
+        LHS = std::make_unique<BinaryExprAST>(BinLoc, BinOp, std::move(LHS), std::move(RHS));
     }
 }
 
@@ -439,6 +445,8 @@ internal std::unique_ptr<PrototypeAST>
 ParsePrototype()
 {
     std::string FnName;
+
+    SourceLocation FnLoc = CurLoc;
 
     unsigned Kind = 0; // 0 = identifier, 1 = unary, 2 = binary
     unsigned BinaryPrecedence = 30;
@@ -514,7 +522,7 @@ ParsePrototype()
         return LogErrorP("Invalid number of operands for operator");
     }
 
-    return std::make_unique<PrototypeAST>(FnName, std::move(ArgNames), Kind != 0, BinaryPrecedence);
+    return std::make_unique<PrototypeAST>(FnLoc, FnName, std::move(ArgNames), Kind != 0, BinaryPrecedence);
 }
 
 /// definition ::= 'def' prototype expression
@@ -549,10 +557,12 @@ ParseExtern()
 internal std::unique_ptr<FunctionAST>
 ParseTopLevelExpr()
 {
+    SourceLocation FnLoc = CurLoc;
+
     if (auto E = ParseExpression())
     {
-        // Make an anonymous proto.
-        auto Proto = std::make_unique<PrototypeAST>("{__anon_expr}", std::vector<std::string>());
+        // Make thee top level expression be main.
+        auto Proto = std::make_unique<PrototypeAST>(FnLoc, "main", std::vector<std::string>());
         return std::make_unique<FunctionAST>(std::move(Proto), std::move(E));
     }
     return nullptr;

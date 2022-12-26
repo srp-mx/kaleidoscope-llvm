@@ -1,0 +1,9 @@
+#!/bin/bash
+
+PROGRAM="fib"
+cat "${PROGRAM}.ks" | ../../build/linux_kaleidoscope 2> "${PROGRAM}.ll" && \
+llc -filetype=obj "${PROGRAM}.ll" -o "${PROGRAM}.o" && \
+clang "${PROGRAM}.o" -o "${PROGRAM}" && \
+eval "./${PROGRAM}"
+
+echo $?

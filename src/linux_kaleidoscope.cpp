@@ -18,11 +18,13 @@
 
 int main()
 {
+    // Initialize the compile target
+    InitializeTarget();
+
     // Install standard binary operators.
     InstallStandardBinaryOperators();
 
     // Prime the first token
-    fprintf(stderr, "ready> ");
     getNextToken();
 
     // Make the module, which holds all the code.
@@ -31,8 +33,9 @@ int main()
     // Run the main "interpreter loop" now
     MainLoop();
 
-    // Print out all of the generated code.
-    return CompileObjectCode();
+    FinalizeLLVM();
+
+    return 0;
 }
 
 

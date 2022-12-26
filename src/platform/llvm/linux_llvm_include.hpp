@@ -33,3 +33,10 @@
 #include "llvm/IR/Instructions.h"
 
 #include "llvm/MC/TargetRegistry.h"
+
+#include "llvm/Analysis/BasicAliasAnalysis.h"
+#include "llvm/Analysis/Passes.h"
+
+#include "llvm/IR/DIBuilder.h"
+
+// TODO(srp): Cleanup
