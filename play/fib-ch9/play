@@ -1,9 +1,14 @@
 #!/bin/bash
-
 PROGRAM="fib"
+PLATFORM="linux"
+EXTERN_LIB="__kaleidoscope_${PLATFORM}_externs.o"
+
+echo "Compiling externs"
+clang++ -O3 -c  "../../src/platform/externs/${PLATFORM}_extern_table.cpp" -o "${EXTERN_LIB}"
+
+echo "Compiling ${PROGRAM}"
+
 cat "${PROGRAM}.ks" | ../../build/linux_kaleidoscope 2> "${PROGRAM}.ll" && \
 llc -filetype=obj "${PROGRAM}.ll" -o "${PROGRAM}.o" && \
-clang -v "${PROGRAM}.o" -o "${PROGRAM}" && \
-eval "./${PROGRAM}"
-
-echo $?
+clang -rdynamic -v "${PROGRAM}.o" "${EXTERN_LIB}" -o "${PROGRAM}" && \
+echo ""; echo ""; echo "Running..."; echo ""; echo ""; eval "./${PROGRAM}"

@@ -14,7 +14,7 @@
 
 #include "kaleidoscope.cpp"
 
-#include "platform/externs/linux_extern_table.hpp"
+#include "platform/externs/linux_extern_table.cpp"
 
 int main()
 {

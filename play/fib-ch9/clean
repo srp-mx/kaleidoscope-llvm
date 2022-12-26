@@ -1,1 +1,1 @@
-rm fib fib.o fib.ll
+rm fib *.o fib.ll
